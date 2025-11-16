@@ -45,6 +45,8 @@ def get_config():
                         help="Directory to save KB files")
     parser.add_argument("--knowledge_name", type=str,
                         help="Knowledge base file name")
+    parser.add_argument("--debug", type=bool, default=False,
+                        help="Enable debug output")
 
     args = parser.parse_args()
 
@@ -58,6 +60,7 @@ def get_config():
         "github_api_key": args.github_api_key or os.getenv("GITHUB_API_KEY"),
         "output_dir": args.output_dir or os.getenv("OUTPUT_DIR") or "./output",
         "knowledge_name": args.knowledge_name or os.getenv("KNOWLEDGE_NAME") or "knowledge_base.md",
+        "debug": args.debug or (os.getenv("DEBUG", "False").lower() == "true"),
     }
 
     # Validate required fields
@@ -105,6 +108,9 @@ EXCLUDED_EXT = (
 visited = set()
 visited_lock = Lock()
 
+global cfg
+cfg = get_config()
+
 
 # -------------------------------------------------
 # UTILITIES
@@ -127,6 +133,11 @@ def normalize_url(base, href):
 
     return full
 
+def debug_print(msg: str):
+    """Print debug messages with timestamp."""
+    if not cfg.get("debug", False):
+        return
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 # -------------------------------------------------
 # MULTITHREADED CRAWLER
@@ -156,9 +167,11 @@ def crawl_page(url, base_url):
             if not full.startswith(base_url):
                 continue
 
+            debug_print(f"[*] Checking link: {full}")
             if is_asset(full):
                 continue
 
+            debug_print(f"[*] Found link: {full}")
             links.append(full)
 
         return links
@@ -176,6 +189,7 @@ def crawl(base_url, threads):
         while pending:
             futures = {}
             for u in pending:
+                debug_print(f"[*] Queueing: {u}")
                 futures[executor.submit(crawl_page, u, base_url)] = u
 
             pending = []
@@ -186,8 +200,10 @@ def crawl(base_url, threads):
                 with visited_lock:
                     visited.add(url)
 
+                debug_print(f"[*] Visited: {url}")
                 all_pages.append(url)
 
+                debug_print(f"[*] Processing results for: {url}")
                 found = fut.result()
                 if not found:
                     continue
@@ -206,8 +222,6 @@ def crawl(base_url, threads):
 # -------------------------------------------------
 
 def main():
-    cfg = get_config()
-
     base_url = cfg["url_target"]
     threads = cfg["threads_worker"]
     output_dir = cfg["output_dir"]
