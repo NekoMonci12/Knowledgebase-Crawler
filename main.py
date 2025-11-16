@@ -245,12 +245,15 @@ def main():
     print("\n[*] Building Knowledge Base…")
 
     builder = KBBuilder(kb_config)
-    kb_output = builder.build(pages)
+
+    sources = {
+        "type": "web",
+        "files": pages
+    }
 
     out_file = os.path.join(output_dir, knowledge_name)
 
-    with open(out_file, "w", encoding="utf-8") as f:
-        f.write(kb_output)
+    kb_output = builder.build(sources=sources, output_file=out_file)
 
     print("\n[✓] KB Saved to:", out_file)
     print("[✓] Done!\n")
