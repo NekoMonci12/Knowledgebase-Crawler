@@ -229,6 +229,16 @@ def main():
 
     os.makedirs(output_dir, exist_ok=True)
 
+    out_file = os.path.join(output_dir, knowledge_name)
+
+    # -------------------------------
+    # SKIP IF FILE EXISTS & NOT EMPTY
+    # -------------------------------
+    if os.path.exists(out_file) and os.path.getsize(out_file) > 0:
+        print(f"[✓] Knowledge Base already exists and is not empty: {out_file}")
+        print("[✓] Skipping crawling and building.\n")
+        return
+
     print(f"\n[*] Crawling: {base_url}")
     print(f"[*] Threads: {threads}")
     print(f"[*] Output: {output_dir}")
@@ -264,8 +274,6 @@ def main():
         "type": "web",
         "files": pages
     }
-
-    out_file = os.path.join(output_dir, knowledge_name)
 
     kb_output = builder.build(sources=sources, output_file=out_file)
 
