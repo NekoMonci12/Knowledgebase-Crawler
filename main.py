@@ -8,6 +8,15 @@ from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 
+# ----------------------------------------------
+# LOAD VENDOR LIBRARIES
+# ----------------------------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+VENDOR_PATH = os.path.join(BASE_DIR, "vendor")
+
+if VENDOR_PATH not in sys.path:
+    sys.path.insert(0, VENDOR_PATH)
+
 from knowledge_base_builder import KBBuilder
 
 

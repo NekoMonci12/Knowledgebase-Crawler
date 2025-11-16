@@ -1,0 +1,3 @@
+[submodule "vendor/knowledge_base_builder"]
+	path = vendor/knowledge_base_builder
+	url = https://github.com/nekomonci12/knowledge-base-builder
