@@ -26,7 +26,7 @@ Designed for projects that need structured KB data for OpenWebUI, RAG pipelines,
 
 Clone the repository:
 ```
-git clone https://github.com/NekoMonci12/Knowledgebase-Crawler
+git clone --recurse-submodules https://github.com/NekoMonci12/Knowledgebase-Crawler 
 cd Knowledgebase-Crawler
 ```
 
