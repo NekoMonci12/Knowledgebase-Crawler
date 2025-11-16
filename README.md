@@ -41,11 +41,12 @@ cd Knowledgebase-Crawler
 ### Basic usage with CLI args
 ```python
 python main.py \
-  --url_target https://docs.papermc.io/paper/dev/api/ \
+  --url_target "https://docs.papermc.io/paper/dev/api/" \
   --threads_worker 8 \
-  --llm_provider openai \
-  --openai_api_key YOUR_KEY \
-  --output_dir ./output
+  --llm_provider "openai" \
+  --openai_api_key "YOUR_KEY" \
+  --output_dir "./output" \
+  --knowledge_name "knowledge_base.md"
 ```
 
 ### Using `.env` only

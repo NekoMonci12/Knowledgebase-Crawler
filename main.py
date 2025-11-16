@@ -34,6 +34,8 @@ def get_config():
                         help="Github API key (optional)")
     parser.add_argument("--output_dir", type=str,
                         help="Directory to save KB files")
+    parser.add_argument("--knowledge_name", type=str,
+                        help="Knowledge base file name")
 
     args = parser.parse_args()
 
@@ -45,7 +47,8 @@ def get_config():
         "gemini_api_key": args.gemini_api_key or os.getenv("GEMINI_API_KEY"),
         "anthropic_api_key": args.anthropic_api_key or os.getenv("ANTHROPIC_API_KEY"),
         "github_api_key": args.github_api_key or os.getenv("GITHUB_API_KEY"),
-        "output_dir": args.output_dir or os.getenv("OUTPUT_DIR"),
+        "output_dir": args.output_dir or os.getenv("OUTPUT_DIR") or "./output",
+        "knowledge_name": args.knowledge_name or os.getenv("KNOWLEDGE_NAME") or "knowledge_base.md",
     }
 
     # Validate required fields
@@ -199,6 +202,7 @@ def main():
     base_url = cfg["url_target"]
     threads = cfg["threads_worker"]
     output_dir = cfg["output_dir"]
+    knowledge_name = cfg["knowledge_name"]
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -234,7 +238,7 @@ def main():
     builder = KBBuilder(kb_config)
     kb_output = builder.build(pages)
 
-    out_file = os.path.join(output_dir, "knowledge_base.md")
+    out_file = os.path.join(output_dir, knowledge_name)
 
     with open(out_file, "w", encoding="utf-8") as f:
         f.write(kb_output)
