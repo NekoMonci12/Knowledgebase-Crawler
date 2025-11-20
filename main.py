@@ -4,7 +4,7 @@ import time
 import argparse
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 
@@ -47,6 +47,8 @@ def get_config():
                         help="Knowledge base file name")
     parser.add_argument("--debug", type=bool, default=False,
                         help="Enable debug output")
+    parser.add_argument("--crawl_scope", type=str, choices=["folder", "domain"],
+                    help="Crawling scope: 'folder' = stay inside base folder, 'domain' = entire domain")
 
     args = parser.parse_args()
 
@@ -61,6 +63,7 @@ def get_config():
         "output_dir": args.output_dir or os.getenv("OUTPUT_DIR") or "./output",
         "knowledge_name": args.knowledge_name or os.getenv("KNOWLEDGE_NAME") or "knowledge_base.md",
         "debug": args.debug or (os.getenv("DEBUG", "False").lower() == "true"),
+        "crawl_scope": args.crawl_scope or os.getenv("CRAWL_SCOPE") or "folder",
     }
 
     # Validate required fields
@@ -120,6 +123,13 @@ def is_asset(url: str) -> bool:
     l = url.lower()
     return any(l.endswith(ext) for ext in EXCLUDED_EXT)
 
+def is_in_base_folder(base, new):
+    base = base.rstrip("/")
+    new = new.rstrip("/")
+    return new == base or new.startswith(base + "/")
+
+def is_same_domain(base_url, new_url):
+    return urlparse(base_url).netloc == urlparse(new_url).netloc
 
 def normalize_url(base, href):
     if not href:
@@ -164,8 +174,14 @@ def crawl_page(url, base_url):
             if not full:
                 continue
 
-            if not full.startswith(base_url):
-                continue
+            scope = cfg.get("crawl_scope", "folder")
+
+            if scope == "folder":
+                if not is_in_base_folder(base_url, full):
+                    continue
+            elif scope == "domain":
+                if not is_same_domain(base_url, full):
+                    continue
 
             debug_print(f"[*] Checking link: {full}")
             if is_asset(full):
